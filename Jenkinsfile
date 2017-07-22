@@ -3,7 +3,7 @@
 /*
 #################### 
 # Jenkins Pipeline script to build and deploy artifacts in DEV environment
-# This scripts accepts Git branch name, Username, Password, cluwe services (yes or no) as input parametres
+# This script accepts Git branch name, Username, Password, cluwe services (yes or no) as input parametres
 # This script checkout code from selected git branch, build the code, SSH into dev servers, transfer the artifacts 
 # into the servers, stop the running artifacts, takes backup of stopped artifacts and logs and start the transferred
 # artifacts and do the verification
