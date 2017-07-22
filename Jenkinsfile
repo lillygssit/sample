@@ -118,7 +118,7 @@ node {
 			
 			
 			// This stage runs only when computejob parameter is selected.
-			if (computejob)
+			if (params.computejob)
 			{
 				// This stage runs the d5-deploy script that deploys computejob service in d5 server.
 				stage('d5-deploy')
