@@ -71,9 +71,7 @@ You will be notified when the deployment is completed.''',
 			stage 'Deployment Approval'
     
 			// E-mail will be sent to the user who started this job asking for approval for the deployment.
-			emailext body: '''The build has been completed for your dev deployment request in jenkins. If you want to proceed with the deployment, Please navigate to the build page and approve the deployment.
-			
-			${JOB_URL}''', 
+			emailext body: '''The build has been completed for your dev deployment request in jenkins. If you want to proceed with the deployment, Please navigate to the build page and approve the deployment.\n\n${JOB_URL}''', 
 				recipientProviders: [[$class: 'RequesterRecipientProvider']], 
 				subject: 'Approval for your dev deployment job in jenkins'
 			
