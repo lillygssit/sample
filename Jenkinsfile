@@ -21,23 +21,10 @@ node {
 	try {
 		
 		// Send the e-mail to the team to notify the start of deployment build
-		emailext body: '''The dev deployment build in jenkins has been ${BUILD_CAUSE} to deploy the following artifacts from ${BRANCH_NAME} branch.
-		
-Webapp = ${webapp}
-ava = ${ava}
-locker.adapter = ${locker_adapter}
-version.adapter = ${version_adapter}
-signature.adapter = ${signature_adapter}
-provision = ${provision}
-computejob = ${computejob}
-		
-The above artifacts with true value will be killed and restarted in the dev. If you are in middle of something, Please navigate to the following URL and cancel the build ASAP.
-		
-${BUILD_URL}
-		
-You will be notified when the deployment is completed.''', 
-	subject: 'Jenkins Job started for Dev Deployment', 
-	to: 'pyde_venkatesh@network.lilly.com'
+		emailext body: '''The dev deployment build in jenkins has been ${BUILD_CAUSE} to deploy the following artifacts from ${BRANCH_NAME} branch./n/nWebapp = ${webapp}/nava = ${ava}/nlocker.adapter = ${locker_adapter}/nversion.adapter = ${version_adapter}/nsignature.adapter = ${signature_adapter}/nprovision = ${provision}/ncomputejob = ${computejob}/n/nThe above artifacts with true value will be killed and restarted in the dev. If you are in middle of something, Please navigate to the following URL and cancel the build ASAP./n/n${BUILD_URL}/n/nYou will be notified when the deployment is completed.''', 
+			
+			subject: 'Jenkins Job started for Dev Deployment', 
+			to: 'pyde_venkatesh@network.lilly.com'
 		
 		// Send the message to the Slack team channel to notify the start of deployment build
 		slackSend color: '#32CD32', message: "The dev deployment build in jenkins has been started to deploy the following artifacts from $BRANCH_NAME branch. \n\nWebapp = $webapp \nava = $ava \nlocker.adapter = ${env.locker_adapter} \nversion.adapter = $version_adapter \nsignature.adapter = $signature_adapter \nprovision = $provision \ncomputejob = $computejob  \nThe above artifacts with true value will be killed and restarted in the dev. If you are in middle of something, Please navigate to the following URL and cancel the build ASAP. \n$BUILD_URL  \nYou will be notified when the deployment is completed."
@@ -50,17 +37,20 @@ You will be notified when the deployment is completed.''',
 			step([$class: 'WsCleanup']) 
 			
 			// Mark the code checkout 'stage'.... This stage check out code from selected GIT branch into the workspace
-			stage 'Checkout'
+			stage ('Checkout') {
 			checkout([$class: 'GitSCM', branches: [[name: '${BRANCH_NAME}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '118fae8c-7897-4a13-846c-036ce473322b', url: 'git@github.com:EliLillyCo/GSS_LRLIT_CLUWE-WebTool.git']]])
+			}
 			
 			// Extract Maven pom version from pom.xml file
 			pom = readMavenPom file: 'pom.xml'
 			pom.version
+			env.pom_version = pom.version
 			
 			// Mark the code build 'stage'.... This stage build the code
 			stage 'Build'
 			// Run the maven build
-			sh "mvn spring-boot:build-info clean install"
+			sh "mvn spring-boot:build-info clean install -DskipTests"
+			
 			
 			// Mark the Archieve 'stage'....
 			stage 'Archieve artifacts'
@@ -92,6 +82,7 @@ You will be notified when the deployment is completed.''',
 				// This stage runs the d1-deploy script that deploys webapp in d1 server.
 				stage('d1-deploy')
 				{
+				    sh "echo ${pom.version}"
 					sh "/home/cluwe_services_q/scripts/final/d1-deploy.sh"
 				}
 			}
@@ -153,9 +144,7 @@ You will be notified when the deployment is completed.''',
 		currentBuild.result = "FAILURE"
 		
 		// Send the e-mail to the user to notify the error in deployment.
-		emailext body: '''The dev deployment job in jenkins has been failed. Please navigate to the build page and check the console output for errors.
-		
-${BUILD_URL}''', 
+		emailext body: '''The dev deployment job in jenkins has been failed. Please navigate to the build page and check the console output for errors./n/n${BUILD_URL}''', 
 			
 			recipientProviders: [[$class: 'RequesterRecipientProvider']], 
 			subject: 'FAILURE of dev deployment job in jenkins'
